@@ -4,6 +4,8 @@
         "module": "commonjs",
         "strict": true,
         "esModuleInterop": true,
+        "experimentalDecorators": true, // 启用实验性装饰器
+        "emitDecoratorMetadata": true,  // 这通常与 TypeORM 一起使用，建议也启用
         "skipLibCheck": true,
         "outDir": "./dist"
     },
