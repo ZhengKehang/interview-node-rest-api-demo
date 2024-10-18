@@ -4,14 +4,26 @@ import { User } from '../entity/User';
 import { sendResponse } from '../utils/responseHelper';
 
 const router = Router();
-
-// 获取 User 的 repository
 const userRepository = AppDataSource.getRepository(User);
+
+const validateEmail = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
 // 创建新用户
 router.post('/', async (req, res) => {
   try {
-    const user = userRepository.create(req.body);
+    const { email, age } = req.body;
+
+    // Email format validation
+    if (!validateEmail(email)) {
+      return sendResponse(res, null, 'Invalid email format', 400);
+    }
+
+    // Ensure age is null if not provided
+    const user = userRepository.create({ ...req.body, age: age || null });
+
     const result = await userRepository.save(user);
     sendResponse(res, result, 'User created successfully', 201);
   } catch (error) {
@@ -45,11 +57,19 @@ router.get('/:id', async (req, res) => {
 // 更新用户
 router.put('/:id', async (req, res) => {
   try {
+    const { email, age } = req.body;
+
+    // Email format validation
+    if (email && !validateEmail(email)) {
+      return sendResponse(res, null, 'Invalid email format', 400);
+    }
+
     const user = await userRepository.findOneBy({ id: parseInt(req.params.id) });
     if (!user) {
       return sendResponse(res, null, 'User not found', 404);
     }
-    userRepository.merge(user, req.body);
+
+    userRepository.merge(user, { ...req.body, age: age || null });
     const result = await userRepository.save(user);
     sendResponse(res, result, 'User updated successfully');
   } catch (error) {
